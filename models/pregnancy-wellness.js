@@ -10,7 +10,7 @@ const PregnancyWellness =sequelize.define(
       allowNull: false,
       primaryKey: true,
     },
-    username: {
+    user: {
       type: STRING,
       allowNull: false,
     },

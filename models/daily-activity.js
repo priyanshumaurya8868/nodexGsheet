@@ -10,7 +10,7 @@ const DailyActivity = sequelize.define(
       allowNull: false,
       primaryKey: true,
     },
-    username: {
+    user: {
       type: STRING,
       allowNull: false,
     },

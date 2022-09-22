@@ -8,7 +8,7 @@ export const PREGNANCY_WELLNESS_DATE_CODS  = {
     "7" : "H14:H19",
     "8" : "I14:I19",
     "9" : "J14:J19",
-    "19" : "K14:K19",
+    "10" : "K14:K19",
     "11" : "L14:L19",
     "12" : "M14:M19",
     "13" : "N14:N19",
@@ -31,6 +31,42 @@ export const PREGNANCY_WELLNESS_DATE_CODS  = {
     "30" : "AE14:AE19",
     "31" : "AF14:AF19",
 }
+
+
+export const getDataCoord =(c_startIndex,c_endIndex)  =>{
+    return {
+   "1" :  `B${c_startIndex}:B${c_endIndex}`,
+   "2" :  `C${c_startIndex}:C${c_endIndex}`,
+   "3" :  `D${c_startIndex}:D${c_endIndex}`,
+   "4" :  `E${c_startIndex}:E${c_endIndex}`,
+   "5" :  `F${c_startIndex}:F${c_endIndex}`,
+   "6" :  `G${c_startIndex}:G${c_endIndex}`,
+   "7" :  `H${c_startIndex}:H${c_endIndex}`,
+   "8" :  `I${c_startIndex}:I${c_endIndex}`,
+   "9" :  `J${c_startIndex}:J${c_endIndex}`,
+   "10" : `K${c_startIndex}:K${c_endIndex}`,
+   "11" : `L${c_startIndex}:L${c_endIndex}`,
+   "12" : `M${c_startIndex}:M${c_endIndex}`,
+   "13" : `N${c_startIndex}:N${c_endIndex}`,
+   "14" : `O${c_startIndex}:O${c_endIndex}`,
+   "15" : `P${c_startIndex}:P${c_endIndex}`,
+   "16" : `Q${c_startIndex}:Q${c_endIndex}`,
+   "17" : `R${c_startIndex}:R${c_endIndex}`,
+   "18" : `S${c_startIndex}:S${c_endIndex}`,
+   "19" : `T${c_startIndex}:T${c_endIndex}`,
+   "20" : `U${c_startIndex}:U${c_endIndex}`,
+   "21" : `V${c_startIndex}:V${c_endIndex}`,
+   "22" : `W${c_startIndex}:W${c_endIndex}`,
+   "23" : `X${c_startIndex}:X${c_endIndex}`,
+   "24" : `Y${c_startIndex}:Y${c_endIndex}`,
+   "25" : `Z${c_startIndex}:Z${c_endIndex}`,
+   "26" : `AA${c_startIndex}:AA${c_endIndex}`,
+   "27" : `AB${c_startIndex}:AB${c_endIndex}`,
+   "28" : `AC${c_startIndex}:AC${c_endIndex}`,
+   "29" : `AD${c_startIndex}:AD${c_endIndex}`,
+   "30" : `AE${c_startIndex}:AE${c_endIndex}`,
+   "31" : `AF${c_startIndex}:AF${c_endIndex}`,
+}}
 
 export const DAILY_ACTIVITIES_CODS  = {
     "1" : "B6:B10",

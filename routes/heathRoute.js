@@ -1,15 +1,9 @@
 import { Router } from "express";
 const router = Router();
-import {
-  getCurrentDay,
-  sendDataToDB,
-  temp,
-} from "../controller/healthController.js";
+import * as controller from "../controller/healthController.js";
 
-router.get("/display", getCurrentDay);
+//...POST :  /store?days=10&spreadsheetId=fdg324r2323r3323r&user=shreya#1231
+router.get("/store", controller.storeData);
 
-//...POST :  /send?timestamp=Sep-21-22&spreadsheetId=fdg324r2323r3323r
-router.post("/send", sendDataToDB);
-
-router.get("/", temp);
+router.get("/", controller.displayData);
 export default router;
