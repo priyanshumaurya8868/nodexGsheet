@@ -30,34 +30,32 @@ export function rangeToDate(range, day) {
   return `${obj.month}-${obj.year}`;
 }
 
-
-export const pregWellMapper = (list, user)=>
+export const pregWellMapper = (list, user) =>
   list.map((valueRange) => {
     const values = valueRange.values;
     const day = values[0];
     const range = valueRange.range;
     const timestamp = rangeToDate(range, day);
     const obj = {
-      user : user,
+      user: user,
       timestamp: timestamp,
       overallEnergy: values[1] ? values[1][0] : null,
-      physicalState: values[2] ? values[2][0]  : null,
+      physicalState: values[2] ? values[2][0] : null,
       mentalState: values[3] ? values[3][0] : null,
-      digestion: values[4] ? values[4][0]  : null,
-      sleepQuality:values[5] ? values[5][0]  : null,
+      digestion: values[4] ? values[4][0] : null,
+      sleepQuality: values[5] ? values[5][0] : null,
     };
     return obj;
-  })
+  });
 
-
-export const dailyActMapper = (list , user)=>
+export const dailyActMapper = (list, user) =>
   list.map((valueRange) => {
     const values = valueRange.values;
     const day = values[0];
     const range = valueRange.range;
     const timestamp = rangeToDate(range, day);
     const obj = {
-      user : user,
+      user: user,
       timestamp: timestamp,
       practiceYoga: values[1] ? values[1][0] === "✅" : null,
       dailyMeditation10Mins: values[2] ? values[2][0] === "✅" : null,
@@ -65,5 +63,12 @@ export const dailyActMapper = (list , user)=>
       didNotEatJunkFood: values[4] ? values[4][0] === "✅" : null,
     };
     return obj;
-  })
+  });
 
+export function getspreadSheetId(url) {
+  try {
+    return url.split("/d/")[1].split("/edit")[0];
+  } catch (err) {
+    return null;
+  }
+}
