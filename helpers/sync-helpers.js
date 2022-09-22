@@ -2,7 +2,7 @@ import moment from "moment";
 
 export function getRangers(dayNum, coordSet) {
   const ranges = [];
-  for (let i = 0; i <= +dayNum; i++) {
+  for (let i = 0; i < +dayNum; i++) {
     const date = moment().subtract(i, "days").format("MMM-DD-YY");
     const range = dateToRange(date, coordSet);
     ranges.push(range);
