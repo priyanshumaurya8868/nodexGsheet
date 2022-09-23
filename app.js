@@ -31,6 +31,5 @@ app.listen(3000, async () => {
     console.log("running on 3000");
   } catch (error) {
     console.error("Unable to connect to the database:", error);
-    res.status(500).json({ msg: error.message || "Something went wrong!" });
   }
 });
