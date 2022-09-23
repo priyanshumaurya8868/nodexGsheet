@@ -21,14 +21,15 @@ app.use(morgan("dev"));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(router)
 
-app.listen(3000, async () => {
+ const PORT = process.env.PORT ?  process.env.PORT :3000
+app.listen(PORT, async () => {
   try {
     await sequelize.authenticate();
     await sequelize
-    .sync()
-    // .sync({force : true});
+    // .sync()
+    .sync({force : true});
     console.log("db Connection has been established successfully.");
-    console.log("running on 3000");
+    console.log("running on "+PORT);
   } catch (error) {
     console.error("Unable to connect to the database:", error);
   }
