@@ -25,12 +25,6 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(router)
 
 
-// Domain.hasMany(Participant)
-// Participant.belongsTo(Domain)
- 
-// Participant.hasMany(Activity) // act.pid
-// Activity.hasOne(Participant) // act.pid
-
 Participant.hasMany(Domain)
 Domain.belongsTo(Participant)
 
@@ -51,3 +45,4 @@ app.listen(PORT, async () => {
     console.error("Unable to connect to the database:", error);
   }
 });
+

@@ -8,10 +8,11 @@ const Activity = sequelize.define("activity", {
     allowNull: false,
   },
   value : INTEGER,
-  date : {
+  day : {
     type: STRING,
     allowNull: false,
   },
+  monthYear : STRING,
 });
 
 export default Activity;

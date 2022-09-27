@@ -5,13 +5,13 @@ import * as controller from "../controller/healthController.js";
 //...get :  /store?days=10&spreadsheetId=fdg324r2323r3323r&user=shreya#1231
 
 
-router.get("/", controller.displayData);
+router.post("/", controller.displayData);
 
 router.get("/regU",controller.regUserRec )
 
-router.get("/temp", controller.temp)
+router.get("/sync", controller.sync)
 
-router.get('/regD', controller.regDomains)
+router.get('/temp', controller.temp)
 
 
 export default router;

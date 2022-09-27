@@ -1,69 +1,133 @@
+import { getColByDate } from "../utils/constants.js";
 import moment from "moment";
+const DAILY_ACTIVITIES = "DAILY ACTIVITIES";
+const PREGNANCY_WELLNESS = "PREGNANCY WELLNESS";
 
-export function getRangers(dayNum, coordSet) {
-  const ranges = [];
-  for (let i = 0; i < +dayNum; i++) {
-    const date = moment().subtract(i, "days").format("MMM-DD-YY");
-    const range = dateToRange(date, coordSet);
-    ranges.push(range);
+export const fetchData = (item) => {
+  const monthYear = item.range.split("!")[0];
+  const _values = item.values;
+  // return _values
+  const da_labeIndex = _values[0].findIndex(
+    (value) => value === DAILY_ACTIVITIES
+  );
+  const pw_labelIndex = _values[0].findIndex(
+    (value) => value === PREGNANCY_WELLNESS
+  );
+
+  console.log("lable Index " + pw_labelIndex);
+
+  const da_dateIndexes = da_labeIndex + 1;
+  const pw_dateIndexes = pw_labelIndex + 1;
+
+  console.log("date Index " + pw_dateIndexes);
+
+  const da_startColIndex = da_dateIndexes + 1;
+  const pw_startColIndex = pw_dateIndexes + 1;
+
+  console.log("start Index " + pw_startColIndex);
+
+  const da_endColIndex = pw_labelIndex - 3;
+  const pw_endColIndex = _values[0].length - 1;
+
+  console.log("end Index " + pw_endColIndex);
+
+  //extrating props
+  const da_props = []; //[day, propName1, propName2, propName3,...]
+  da_props.push("day");
+  for (let i = da_startColIndex; i <= da_endColIndex; i++) {
+    da_props.push(_values[0][i]);
   }
+
+  const pw_props = []; //[day, propName1, propName2, propName3,...]
+  pw_props.push("day");
+  for (let i = pw_startColIndex; i <= pw_endColIndex; i++) {
+    pw_props.push(_values[0][i]);
+  }
+
+  const da_resultArr = []; //[dayValue, propValue1, propValue2, propValue3... ]
+  for (let i = 1; i < _values.length; i++) {
+    const _dailyRec = [];
+    for (let j = da_dateIndexes; j <= da_endColIndex; j++) {
+      _dailyRec.push(_values[i][j]);
+    }
+    da_resultArr.push(_dailyRec);
+  }
+
+  const pw_resultArr = []; //[dayValue, propValue1, propValue2, propValue3... ]
+  for (let i = 1; i < _values.length; i++) {
+    const _dailyRec = [];
+    for (let j = pw_dateIndexes; j <= pw_endColIndex; j++) {
+      _dailyRec.push(_values[i][j]);
+    }
+    pw_resultArr.push(_dailyRec);
+  }
+  // [ {title : "", value : "", date : ""} ]
+  const pw_results = pw_resultArr.map((dailyRec) => {
+    let propA = [];
+    for (let i = 1; i < dailyRec.length; i++) {
+      const prop = {
+        title: pw_props[i],
+        value: dailyRec[i],
+        day: dailyRec[0],
+        monthYear: monthYear.split("'").join(""),
+      };
+      propA.push(prop);
+    }
+    return propA;
+  });
+
+  // [ {title : "", value : "", date : ""} ]
+  const da_results = da_resultArr.map((dailyRec) => {
+    let propA = [];
+    for (let i = 1; i < dailyRec.length; i++) {
+      const prop = {
+        title: da_props[i],
+        value: dailyRec[i],
+        day: dailyRec[0],
+        monthYear: monthYear.split("'").join(""),
+      };
+      propA.push(prop);
+    }
+    return propA;
+  });
+
+  return {
+    pw_results,
+    da_results,
+  };
+};
+
+export function getRange(numOfDay, currentMoment, pastMoment) {
+  const fetchTill = currentMoment.format("MMM-DD-YY");
+  const [ftmonth, ftday, ftyear] = fetchTill.split("-");
+
+  const fetchFrom = pastMoment.format("MMM-DD-YY");
+  const [ffmonth, ffday, ffyear] = fetchFrom.split("-");
+
+  console.log("fetchTill " + fetchTill);
+  console.log("ferchFrom " + fetchFrom);
+
+  const ranges = [];
+
+  console.log("past days" + numOfDay);
+  const diff = Math.ceil(currentMoment.diff(pastMoment, "months", true));
+  console.log("Difference : " + diff);
+
+  if (+diff >= 1) {
+    for (let i = 1; i <= diff; i++) {
+      const m = currentMoment.subtract(i, "months");
+      const range =
+        m.format("MMM") +
+        m.format("YY") +
+        "!A:" +
+        getColByDate[+m.endOf("month").format("DD")];
+      ranges.push(range);
+    }
+  }
+  ranges.push(ftmonth + ftyear + `!A:${getColByDate[+ftday]}`);
+  console.log("my ranges " + ranges);
   return ranges;
 }
-
-function dateToRange(date, coordSet) {
-  const [month, day, year] = date.split("-");
-  const index = coordSet[day];
-  const range = `${month} '${year}!${index}`;
-  return range;
-}
-
-export function getKeyByValue(object, value) {
-  return Object.keys(object).find((key) => object[key] === value);
-}
-
-export function rangeToDate(range, day) {
-  const arr = range.split("'");
-  const obj = { month: arr[1].trim(), year: arr[3] };
-  if (day) {
-    return `${day}-${obj.month}-${obj.year}`;
-  }
-  return `${obj.month}-${obj.year}`;
-}
-
-export const pregWellMapper = (list, user) =>
-  list.map((valueRange) => {
-    const values = valueRange.values;
-    const day = values[0];
-    const range = valueRange.range;
-    const timestamp = rangeToDate(range, day);
-    const obj = {
-      user: user,
-      timestamp: timestamp,
-      overallEnergy: values[1] ? values[1][0] : null,
-      physicalState: values[2] ? values[2][0] : null,
-      mentalState: values[3] ? values[3][0] : null,
-      digestion: values[4] ? values[4][0] : null,
-      sleepQuality: values[5] ? values[5][0] : null,
-    };
-    return obj;
-  });
-
-export const dailyActMapper = (list, user) =>
-  list.map((valueRange) => {
-    const values = valueRange.values;
-    const day = values[0];
-    const range = valueRange.range;
-    const timestamp = rangeToDate(range, day);
-    const obj = {
-      user: user,
-      timestamp: timestamp,
-      practiceYoga: values[1] ? values[1][0] === "✅" : null,
-      dailyMeditation10Mins: values[2] ? values[2][0] === "✅" : null,
-      talkToYourBaby: values[3] ? values[3][0] === "✅" : null,
-      didNotEatJunkFood: values[4] ? values[4][0] === "✅" : null,
-    };
-    return obj;
-  });
 
 export function getspreadSheetId(url) {
   try {
@@ -72,3 +136,52 @@ export function getspreadSheetId(url) {
     return null;
   }
 }
+
+export const monthYearParser = (monthYear) => {
+  const month = monthYear.substring(0, monthYear.length - 2);
+  const year = +monthYear.substring(monthYear.length - 2, monthYear.length);
+  let res = 0;
+  switch (month) {
+    case "Jan":
+      res = 100;
+      break;
+    case "Feb":
+      res = 200;
+      break;
+    case "March":
+      res = 300;
+      break;
+    case "April":
+      res = 400;
+      break;
+    case "May":
+      res = 500;
+      break;
+    case "June":
+      res = 600;
+      break;
+    case "July":
+      res = 700;
+      break;
+    case "Aug":
+      res = 800;
+      break;
+    case "Sep":
+      res = 900;
+      break;
+    case "Oct":
+      res = 1000;
+      break;
+    case "Nov":
+      res = 1100;
+      break;
+    case "Dec":
+      res = 1200;
+      break;
+  }
+  // console.log(month)
+  // console.log('prev resc-> '+res)
+  res = res + year;
+  // console.log('post resc-> '+res)
+  return res;
+};
