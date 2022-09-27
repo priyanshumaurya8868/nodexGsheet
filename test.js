@@ -1,11 +1,8 @@
 
-import moment from "moment";
+// import moment from "moment";
+// const endOfMonth = moment().subtract(1, "months"). endOf('month'). format('MMM-DD-YY');
+// //  console.log(endOfMonth)
 
-console.log(moment().format('MMM-DD-YY'))
+// import { getColByDate } from "./utils/constants.js";
 
-console.log(moment().subtract(10, 'days').format('MMM-DD-YY'))
-
-const t =  "34234"
-// "https://docs.google.com/spreadsheets/d/1TPD94tGsQRblionmHjlLAuZd5O4s6_ctiOBB0eS6Gd0/edit#gid=0"
-console.log (t.split("/d/")[1].split('/edit')[0] ) 
 

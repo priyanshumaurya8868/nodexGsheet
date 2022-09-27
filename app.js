@@ -5,6 +5,9 @@ const app = Express();
 import router from "./routes/heathRoute.js";
 import morgan from 'morgan'
 import bodyParser from 'body-parser'
+import Domain from "./models/domain.js";
+import Participant from "./models/participant.js";
+import Activity from "./models/activity.js";
 
 export const auth = new google.auth.GoogleAuth({
   keyFile: "cred.json",
@@ -20,6 +23,20 @@ export const googleSheets = google.sheets({ version: "v4", auth: client });
 app.use(morgan("dev"));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(router)
+
+
+// Domain.hasMany(Participant)
+// Participant.belongsTo(Domain)
+ 
+// Participant.hasMany(Activity) // act.pid
+// Activity.hasOne(Participant) // act.pid
+
+Participant.hasMany(Domain)
+Domain.belongsTo(Participant)
+
+Domain.hasMany(Activity)
+Activity.belongsTo(Domain)
+
 
  const PORT = process.env.PORT ?  process.env.PORT :3000
 app.listen(PORT, async () => {
