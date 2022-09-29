@@ -14,22 +14,22 @@ export const fetchData = (item) => {
     (value) => value === PREGNANCY_WELLNESS
   );
 
-  console.log("lable Index " + pw_labelIndex);
+  // console.log("lable Index " + pw_labelIndex);
 
   const da_dateIndexes = da_labeIndex + 1;
   const pw_dateIndexes = pw_labelIndex + 1;
 
-  console.log("date Index " + pw_dateIndexes);
+  // console.log("date Index " + pw_dateIndexes);
 
   const da_startColIndex = da_dateIndexes + 1;
   const pw_startColIndex = pw_dateIndexes + 1;
 
-  console.log("start Index " + pw_startColIndex);
+  // console.log("start Index " + pw_startColIndex);
 
   const da_endColIndex = pw_labelIndex - 3;
   const pw_endColIndex = _values[0].length - 1;
 
-  console.log("end Index " + pw_endColIndex);
+  // console.log("end Index " + pw_endColIndex);
 
   //extrating props
   const da_props = []; //[day, propName1, propName2, propName3,...]
@@ -98,32 +98,31 @@ export const fetchData = (item) => {
 };
 
 export function getRange(numOfDay, currentMoment, pastMoment) {
+
   const fetchTill = currentMoment.format("MMM-DD-YY");
   const [ftmonth, ftday, ftyear] = fetchTill.split("-");
-
+  
   const fetchFrom = pastMoment.format("MMM-DD-YY");
-  const [ffmonth, ffday, ffyear] = fetchFrom.split("-");
-
   console.log("fetchTill " + fetchTill);
   console.log("ferchFrom " + fetchFrom);
-
-  const ranges = [];
-
   console.log("past days" + numOfDay);
-  const diff = Math.ceil(currentMoment.diff(pastMoment, "months", true));
+  const diff = currentMoment.diff(pastMoment, "months", true);
   console.log("Difference : " + diff);
 
-  if (+diff >= 1) {
-    for (let i = 1; i <= diff; i++) {
-      const m = currentMoment.subtract(i, "months");
-      const range =
-        m.format("MMM") +
-        m.format("YY") +
+  const ranges = [];
+  const pastMoment2 = pastMoment.clone();
+  while (
+    pastMoment2.diff(currentMoment, "months", true) < 0 &&
+    pastMoment.format("MMM") !== currentMoment.format("MMM")
+  ) {
+    ranges.push(
+      pastMoment2.format("MMMYY") +
         "!A:" +
-        getColByDate[+m.endOf("month").format("DD")];
-      ranges.push(range);
-    }
+        getColByDate[+pastMoment2.endOf("month").format("DD")]
+    );
+    pastMoment2.add(1, "months");
   }
+
   ranges.push(ftmonth + ftyear + `!A:${getColByDate[+ftday]}`);
   console.log("my ranges " + ranges);
   return ranges;

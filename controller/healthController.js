@@ -134,21 +134,29 @@ export const displayData = async (req, res, next) => {
 
     return res.status(200).json({ msg: "done", participant });
   } catch (err) {
+    console.log(err.message)
     res.status(500).json({ msg: err.message || "Something went wrong!" });
   }
 };
 
 export const temp = async (req, res, next) => {
-  const result = await Participant.findAll({ include: Domain.Activity });
+  const participants = await Participant.findAll({ include: {model : Domain}});
 
-  res.send(result);
+
+  participants.map(p =>{
+      
+  })
+  
+
+  res.json({participants});
 };
 
 export const regUserRec = async (req, res, next) => {
   const spreadsheetId =
-    req.query.spreadsheetId || "1yxMYxYoUOaYiecS4279a6Gvcuzx8trSfHf-LaIcnLXo";
+    req.query.spreadsheetId || '1K_aFiK0cZhKQUnVMMF5x03JWNjWADfauxjT-JoI_e8c'
+    // "1yxMYxYoUOaYiecS4279a6Gvcuzx8trSfHf-LaIcnLXo";
 
-  const range = req.query.range || "Sheet1!A:B";
+  const range = req.query.range || "Journal Automation!A:B";
 
   try {
     const rows = await googleSheets.spreadsheets.values.get({
@@ -160,6 +168,7 @@ export const regUserRec = async (req, res, next) => {
     const participants = [];
     const records = rows.data.values;
     for (let i = 1; i < records.length; i++) {
+     try{
       const [name, journalLink] = records[i];
 
       const p = await Participant.create({
@@ -170,9 +179,11 @@ export const regUserRec = async (req, res, next) => {
       const pw = await Domain.create({ label: PREGNANCY_WELLNESS });
       await p.addDomains([da, pw]);
       participants.push(p);
+      }catch(err) {
+        console.log(err.message)
+     }
     }
-
-    return res.status(201).json({ participants });
+    return res.status(201).json({ newRegisteredUSers : participants });
   } catch (err) {
     console.log(err);
     res.status(500).json({ msg: err.message });
@@ -194,10 +205,10 @@ export const sync = async (req, res, next) => {
   try {
     const participants = await Participant.findAll({})
 
-    const spreadsheetIds = participants.map(p => p.spreadsheetId)
+    const data = participants.map(p => {return{spreadsheetId: p.spreadsheetId, name : p.name}})
 
-   const response = await Promise.all( spreadsheetIds.map((id) => {
-      return axios.post(baseUrl + `?spreadsheetId=${id}`, {
+   const response = await Promise.all( data.map((obj) => {
+      return axios.post(baseUrl + `?spreadsheetId=${obj.spreadsheetId}&username=${obj.name}`, {
         method: "POST",
         body: {},
       });

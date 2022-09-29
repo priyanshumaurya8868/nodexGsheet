@@ -6,6 +6,7 @@
 //   "AVNS_6ZycoIYhGzFrgZwjjAD",
 //   {
 //     dialect: "postgres",
+//     logging: false,
 //     host: "db-postgresql-blr1-11888-do-user-9887934-0.b.db.ondigitalocean.com",
 //     port: "25060",
 //     dialectOptions: {
@@ -18,7 +19,6 @@
 // );
 
 // export default sequelize;
-
 
 import Sequelize from "sequelize";
 
