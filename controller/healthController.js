@@ -9,19 +9,18 @@ const DAILY_ACTIVITIES = "DAILY ACTIVITIES";
 const PREGNANCY_WELLNESS = "PREGNANCY WELLNESS";
 import axios from "axios";
 
-export const displayData = async (req, res, next) => {
+export const storeDatabySpreadsheetId = async (req, res, next) => {
   const ranges =
     //  ["Sep22!A:B"];
     req.body.ranges ? req.body.ranges : [];
 
-  const spreadsheetId = req.query.spreadsheetId
-    // ? req.query.spreadsheetId
-    // : "1TPD94tGsQRblionmHjlLAuZd5O4s6_ctiOBB0eS6Gd0";
+  const spreadsheetId = req.query.spreadsheetId;
+  // ? req.query.spreadsheetId
+  // : "1TPD94tGsQRblionmHjlLAuZd5O4s6_ctiOBB0eS6Gd0";
 
-
-    if(!spreadsheetId) {
-      res.status(400).json({msg : "SpreadsheetId is missing!"})
-    }
+  if (!spreadsheetId) {
+    res.status(400).json({ msg: "SpreadsheetId is missing!" });
+  }
 
   const numOfDay = +(req.query.days || 10);
 
@@ -31,9 +30,9 @@ export const displayData = async (req, res, next) => {
   const [ffmonth, ffday, ffyear] = fetchFrom.split("-");
 
   if (ranges.length === 0) {
-    helper.getRange(numOfDay, currentMoment, pastMoment).map((range) =>
-      ranges.push(range)
-    );
+    helper
+      .getRange(numOfDay, currentMoment, pastMoment)
+      .map((range) => ranges.push(range));
   }
 
   try {
@@ -48,8 +47,11 @@ export const displayData = async (req, res, next) => {
       },
     });
 
+    //...validation
     if (!participant) {
-      return res.status(404).json({ message: "User not exists" });
+      return res.status(404).json({
+        message: "No User exists with spreadsheetId : " + spreadsheetId,
+      });
     }
 
     // Read rows from spreadsheet
@@ -60,13 +62,16 @@ export const displayData = async (req, res, next) => {
       majorDimension: "COLUMNS",
     });
 
+    //...parsing data
     const sheets = getDailyActRows.data.valueRanges.map((valueRange) =>
       helper.fetchData(valueRange)
     );
     const pw = [];
     const da = [];
 
+    //removing unnessary days
     sheets.map((sheet) => {
+      
       sheet.pw_results.map((datedCol) => {
         const datedScore =
           +helper.monthYearParser(datedCol[0].monthYear) + +datedCol[0].day;
@@ -77,7 +82,6 @@ export const displayData = async (req, res, next) => {
           });
         }
       });
-
       sheet.da_results.map((datedCol) => {
         const datedScore =
           +helper.monthYearParser(datedCol[0].monthYear) + +datedCol[0].day;
@@ -134,27 +138,15 @@ export const displayData = async (req, res, next) => {
 
     return res.status(200).json({ msg: "done", participant });
   } catch (err) {
-    console.log(err.message)
+    console.log(err.message);
     res.status(500).json({ msg: err.message || "Something went wrong!" });
   }
 };
 
-export const temp = async (req, res, next) => {
-  const participants = await Participant.findAll({ include: {model : Domain}});
-
-
-  participants.map(p =>{
-      
-  })
-  
-
-  res.json({participants});
-};
-
 export const regUserRec = async (req, res, next) => {
   const spreadsheetId =
-    req.query.spreadsheetId || '1K_aFiK0cZhKQUnVMMF5x03JWNjWADfauxjT-JoI_e8c'
-    // "1yxMYxYoUOaYiecS4279a6Gvcuzx8trSfHf-LaIcnLXo";
+    req.query.spreadsheetId || "1K_aFiK0cZhKQUnVMMF5x03JWNjWADfauxjT-JoI_e8c";
+  // "1yxMYxYoUOaYiecS4279a6Gvcuzx8trSfHf-LaIcnLXo";
 
   const range = req.query.range || "Journal Automation!A:B";
 
@@ -168,22 +160,22 @@ export const regUserRec = async (req, res, next) => {
     const participants = [];
     const records = rows.data.values;
     for (let i = 1; i < records.length; i++) {
-     try{
-      const [name, journalLink] = records[i];
+      try {
+        const [name, journalLink] = records[i];
 
-      const p = await Participant.create({
-        spreadsheetId: helper.getspreadSheetId(journalLink),
-        name: name,
-      });
-      const da = await Domain.create({ label: DAILY_ACTIVITIES });
-      const pw = await Domain.create({ label: PREGNANCY_WELLNESS });
-      await p.addDomains([da, pw]);
-      participants.push(p);
-      }catch(err) {
-        console.log(err.message)
-     }
+        const p = await Participant.create({
+          spreadsheetId: helper.getspreadSheetId(journalLink),
+          name: name,
+        });
+        const da = await Domain.create({ label: DAILY_ACTIVITIES });
+        const pw = await Domain.create({ label: PREGNANCY_WELLNESS });
+        await p.addDomains([da, pw]);
+        participants.push(p);
+      } catch (err) {
+        console.log(err.message);
+      }
     }
-    return res.status(201).json({ newRegisteredUSers : participants });
+    return res.status(201).json({ newRegisteredUSers: participants });
   } catch (err) {
     console.log(err);
     res.status(500).json({ msg: err.message });
@@ -203,21 +195,33 @@ const upsertActivity = async (values, condition, domain) => {
 export const sync = async (req, res, next) => {
   const baseUrl = req.protocol + "://" + req.get("host");
   try {
-    const participants = await Participant.findAll({})
+    const participants = await Participant.findAll({});
 
-    const data = participants.map(p => {return{spreadsheetId: p.spreadsheetId, name : p.name}})
+    const data = participants.map((p) => {
+      return { spreadsheetId: p.spreadsheetId, name: p.name, lastHowManyDays : 10 };
+    });
 
-   const response = await Promise.all( data.map((obj) => {
-      return axios.post(baseUrl + `?spreadsheetId=${obj.spreadsheetId}&username=${obj.name}`, {
-        method: "POST",
-        body: {},
-      });
-    }))
-    
-
-    res.status(201).json({ msg : "done!"});
+    const result = await Promise.all(
+      data.map( async (obj) => {
+        try {
+           await axios.post(
+            baseUrl +
+              `?spreadsheetId=${obj.spreadsheetId}&days=${obj.lastHowManyDays}&user=${obj.name}`,
+            {
+              method: "POST",
+            }
+          );
+          
+          return { user: obj, msg: "Data stored!!" };
+        } catch (err) {
+          // console.log(err)
+          return { user: obj, msg:err.message ||"Could not sync data!!" };
+        }
+      })
+    );
+    res.status(201).json({ msg: "done!", result });
   } catch (err) {
-    console.log(err);
+    // console.log(err);
     res.status(500).json({ msg: err.message });
   }
 };

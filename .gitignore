@@ -4,3 +4,4 @@ utils/database.js
 ca-certificate.crt
 nodemon.json
 mycred.json
+test.js
