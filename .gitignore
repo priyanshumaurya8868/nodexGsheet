@@ -1,6 +1,5 @@
 node_modules
 cred.json
-utils/database.js
 ca-certificate.crt
 nodemon.json
 mycred.json

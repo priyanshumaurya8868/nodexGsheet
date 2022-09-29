@@ -10,13 +10,9 @@ const PREGNANCY_WELLNESS = "PREGNANCY WELLNESS";
 import axios from "axios";
 
 export const storeDatabySpreadsheetId = async (req, res, next) => {
-  const ranges =
-    //  ["Sep22!A:B"];
-    req.body.ranges ? req.body.ranges : [];
+  const ranges = req.body.ranges ? req.body.ranges : [];
 
   const spreadsheetId = req.query.spreadsheetId;
-  // ? req.query.spreadsheetId
-  // : "1TPD94tGsQRblionmHjlLAuZd5O4s6_ctiOBB0eS6Gd0";
 
   if (!spreadsheetId) {
     res.status(400).json({ msg: "SpreadsheetId is missing!" });
@@ -36,6 +32,7 @@ export const storeDatabySpreadsheetId = async (req, res, next) => {
   }
 
   try {
+    //searching associated participant along with thier domains
     const participant = await Participant.findOne({
       where: {
         spreadsheetId: {
@@ -71,7 +68,6 @@ export const storeDatabySpreadsheetId = async (req, res, next) => {
 
     //removing unnessary days
     sheets.map((sheet) => {
-      
       sheet.pw_results.map((datedCol) => {
         const datedScore =
           +helper.monthYearParser(datedCol[0].monthYear) + +datedCol[0].day;
@@ -96,7 +92,7 @@ export const storeDatabySpreadsheetId = async (req, res, next) => {
 
     const [da_domain, pw_domain] = participant.domains;
 
-    const res1 = await Promise.all(
+    const updatedDailyActivities = await Promise.all(
       da.map((dailyAct) => {
         return upsertActivity(
           {
@@ -116,7 +112,7 @@ export const storeDatabySpreadsheetId = async (req, res, next) => {
       })
     );
 
-    const res2 = await Promise.all(
+    const updatedPregWellActs = await Promise.all(
       pw.map((PregWell) => {
         return upsertActivity(
           {
@@ -136,7 +132,15 @@ export const storeDatabySpreadsheetId = async (req, res, next) => {
       })
     );
 
-    return res.status(200).json({ msg: "done", participant });
+    return res.status(200).json({
+      msg: "done",
+      participantName: participant.name,
+      spreadsheetId: spreadsheetId,
+      updatedPregWellActs,
+      updatedDailyActivities,
+      fetchedRange: ranges,
+      days: numOfDay,
+    });
   } catch (err) {
     console.log(err.message);
     res.status(500).json({ msg: err.message || "Something went wrong!" });
@@ -146,7 +150,6 @@ export const storeDatabySpreadsheetId = async (req, res, next) => {
 export const regUserRec = async (req, res, next) => {
   const spreadsheetId =
     req.query.spreadsheetId || "1K_aFiK0cZhKQUnVMMF5x03JWNjWADfauxjT-JoI_e8c";
-  // "1yxMYxYoUOaYiecS4279a6Gvcuzx8trSfHf-LaIcnLXo";
 
   const range = req.query.range || "Journal Automation!A:B";
 
@@ -193,35 +196,54 @@ const upsertActivity = async (values, condition, domain) => {
 };
 
 export const sync = async (req, res, next) => {
+  const days = req.query.days || 10;
   const baseUrl = req.protocol + "://" + req.get("host");
   try {
     const participants = await Participant.findAll({});
 
     const data = participants.map((p) => {
-      return { spreadsheetId: p.spreadsheetId, name: p.name, lastHowManyDays : 10 };
+      return {
+        spreadsheetId: p.spreadsheetId,
+        name: p.name,
+        lastHowManyDays: days,
+      };
     });
 
-    const result = await Promise.all(
-      data.map( async (obj) => {
-        try {
-           await axios.post(
-            baseUrl +
-              `?spreadsheetId=${obj.spreadsheetId}&days=${obj.lastHowManyDays}&user=${obj.name}`,
-            {
-              method: "POST",
-            }
-          );
-          
-          return { user: obj, msg: "Data stored!!" };
-        } catch (err) {
-          // console.log(err)
-          return { user: obj, msg:err.message ||"Could not sync data!!" };
-        }
-      })
-    );
-    res.status(201).json({ msg: "done!", result });
+    const results = await runSequence(data, 1500, syncData, baseUrl);
+
+    res.status(201).json({ msg: "done!", results: results });
   } catch (err) {
-    // console.log(err);
+    console.log(err);
     res.status(500).json({ msg: err.message });
   }
 };
+
+async function runSequence(array, delayT, fn, baseUrl) {
+  let results = [];
+  for (let item of array) {
+    let data = await fn(item, baseUrl);
+    results.push(data);
+    await delay(delayT);
+  }
+  return results;
+}
+
+const syncData = async (obj, baseUrl) => {
+  try {
+    await axios.post(
+      baseUrl +
+        `?spreadsheetId=${obj.spreadsheetId}&days=${obj.lastHowManyDays}&user=${obj.name}`,
+      { method: "POST" }
+    );
+    const res = { user: obj, msg: "data stored!" };
+    return res;
+  } catch (err) {
+    console.log(err);
+    return { user: obj, msg: err.message || "couldn't stored data!" };
+  }
+};
+function delay(t, data) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, t, data);
+  });
+}

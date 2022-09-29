@@ -1,37 +1,37 @@
-// import Sequelize from "sequelize";
-
-// const sequelize = new Sequelize(
-//   "defaultdb",
-//   "doadmin",
-//   "AVNS_6ZycoIYhGzFrgZwjjAD",
-//   {
-//     dialect: "postgres",
-//     logging: false,
-//     host: "db-postgresql-blr1-11888-do-user-9887934-0.b.db.ondigitalocean.com",
-//     port: "25060",
-//     dialectOptions: {
-//       ssl: {
-//         require: true,
-//         rejectUnauthorized: false,
-//       },
-//     },
-//   }
-// );
-
-// export default sequelize;
-
 import Sequelize from "sequelize";
 
 const sequelize = new Sequelize(
-  "postgres",
-  "postgres",
-  "123456",
+  process.env.db_name,
+  process.env.db_username,
+  process.env.db_password,
   {
     dialect: "postgres",
-    host: "localhost",
-    port: "5432",
-    logging: false
+    logging: false,
+    host: process.env.db_host,
+    port: process.env.db_port,
+    dialectOptions: {
+      ssl: {
+        require: true,
+        rejectUnauthorized: false,
+      },
+    },
   }
 );
 
-export default sequelize
+export default sequelize;
+
+// import Sequelize from "sequelize";
+
+// const sequelize = new Sequelize(
+//   "postgres",
+//   "postgres",
+//   "123456",
+//   {
+//     dialect: "postgres",
+//     host: "localhost",
+//     port: "5432",
+//     logging: false
+//   }
+// );
+
+// export default sequelize
